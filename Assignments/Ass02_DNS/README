@@ -4,25 +4,22 @@ University of Colorado Boulder
 Programming Assignment 2
 Public Code
 
-By Andy Sayler - 2012
-http://www.andysayler.com
+By Daniel Morrissey
 
 With help from:
 Junho Ahn - 2012
 
 Adopted from previous code by
+ Andy Sayler - 2012
  Chris Wailes <chris.wailes@gmail.com> - 2010
  Wei-Te Chen <weite.chen@colorado.edu> - 2011
  Blaise Barney - pthread-hello.c
 
 ---Folders---
 input - names*.txt input files
-handout - Assignment description and documentation
 
 ---Executables---
-lookup - A basic non-threaded DNS query-er
-queueTest - Unit test program for queue
-pthread-hello ; A simple threaded "Hello World" program
+multi-lookup - A threaded DNS query-er
 
 ---Examples---
 Build:
@@ -32,10 +29,4 @@ Clean:
  make clean
 
 Lookup DNS info for all names files in input folder:
- ./lookup input/names*.txt results.txt
-
-Check queue for memory leaks:
- valgrind ./queueTest
-
-Run pthread-hello
- ./pthread-hello
+ ./multi-lookup input/names*.txt results.txt

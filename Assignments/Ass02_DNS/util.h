@@ -14,7 +14,7 @@
 #define UTIL_H
 
 /* Define the following to enable debug statments */
-// #define UTIL_DEBUG
+//#define UTIL_DEBUG
 
 #include <stdlib.h>
 #include <stdio.h>
