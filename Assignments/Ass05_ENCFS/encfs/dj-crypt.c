@@ -7,16 +7,16 @@ void EncryptFile(FILE* in, FILE* out, char* key)
 {
 	if(!do_crypt(in, out, 1, key))
 	{
-		fprintf(stderr, "Error encrypting");
+		fprintf(stderr, "Error encrypting**\n\n");
 	}
 
 	return;
 }
 void DecryptFile(FILE* in, FILE* out, char* key)
 {
-	if(!do_crypt(in, out, 0, key))
+	if(!do_crypt(in, out, -1, key))
 	{
-		fprintf(stderr, "Error decrypting");
+		fprintf(stderr, "Error decrypting**\n\n");
 	}
 	
 	return;

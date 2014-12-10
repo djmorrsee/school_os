@@ -1,0 +1,25 @@
+Daniel Morrissey
+damo4408 
+PA5 - Encrypted Filesystem
+
+This is my submission for PA5. All requirements except for encrypted write have been met.
+
+To build:
+	make all
+	
+To use
+	./encfs <passphrase> <mirror dir> <mount dir>
+	
+Comments:
+	- All files created in the encfs will have a user.pa5encfs.encrypted attribute set to true
+		- theres no way to have a file with this attribute set to false
+	- The system handles multiple openings of the same file by iterating temp file names (up to x.tmp999)
+	- The system can mirror any directory
+	- The system can be run in debug mode (-d) but only if its the last argument
+
+I hit a wall trying to properly output an encrypted file. I could not figure out how to output all encrypted blocks during write time.
+This has resulted in my filesystem not being able to read files it has encrypted, as decryption ALWAYS throws the improper block size error.
+
+I've disabled encrypted read because of this in the system. Instead, it does the "pass-through" option in do_crypt(), meaning the only thing that has been disabled is the decryption step.
+
+You are able to create and write (broken) encrypted files still, and the system handles unencrypted files without issue.

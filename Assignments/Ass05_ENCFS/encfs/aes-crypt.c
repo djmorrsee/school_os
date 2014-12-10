@@ -76,6 +76,7 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 		{
 		    /* Error */
 		    EVP_CIPHER_CTX_cleanup(&ctx);
+		    printf("***ERRR****\n");
 		    return 0;
 		}
 	}
@@ -102,6 +103,8 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 	    {
 		/* Error */
 		EVP_CIPHER_CTX_cleanup(&ctx);
+				    printf("***E0RR0R****\n");
+
 		return 0;
 	    }
 	/* Write remainign cipher block + padding*/

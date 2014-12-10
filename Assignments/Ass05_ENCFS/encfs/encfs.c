@@ -333,23 +333,25 @@ static int encfs_read(const char *path, char *buf, size_t size, off_t offset,
 	
 	bool is_encrypted = IsEncrypted(fpath);
 	
+	if (key == NULL)
+		printf("\n\n **** KEY IS NULL **** \n\n");
+	printf("\n\n***** FILE ENCRYPTED: %d *****\n\n", is_encrypted);
 	if(is_encrypted) 
 	{
 		char tpath[PATH_MAX];
 		tmpFileName(fpath, tpath);
 		
 		//int td = open(tpath, O_WRONLY);
-		FILE* realFile = fopen(fpath, "r");
-		FILE* tmpFile = fopen(tpath, "w");
+		FILE* realFile = fopen(fpath, "rb");
+		FILE* tmpFile = fopen(tpath, "wb");
 		DecryptFile(realFile, tmpFile, key);
 		//fflush(tmpFile);
 		//actual_descriptor = dup(fileno(tmpFile));
 		fclose(realFile);
 		fclose(tmpFile);
+		
 		int fd = open(tpath, O_RDONLY);		
-		
 		res = pread(fd, buf, size, offset);
-		
 		close(fd);
 		
 	} else {
@@ -382,24 +384,53 @@ static int encfs_write(const char *path, const char *buf, size_t size,
 	bool is_encrypted = IsEncrypted(fpath);
 	if (is_encrypted) {
 		
-		char tpath[PATH_MAX];
-		tmpFileName(fpath, tpath);
-		
-		int fd = open(fpath, O_WRONLY);
-		int td = open(tpath, O_WRONLY);
-	
-		if (fd == -1)
-			return -errno;
-			
 		// The solution i see for now involves creating a new buf and size
 		// Write to the tmp file, Encrypt it, and then read the new file
 		// Finally, pwrite to the original file using the new buffer and size
+		char tpath[PATH_MAX];
+		char tpath01[PATH_MAX];
 
-		res = pwrite(fd, buf, size, offset);
-		if (res == -1)
-			res = -errno;
-	
+		// Write unencrypted file
+		tmpFileName(fpath, tpath);
+		FILE* dec_file = fopen(tpath, "wb");
+		fprintf(dec_file, "%s", buf);
+		fflush(dec_file);
+
+		// Write encrypted file
+		tmpFileName(fpath, tpath01);
+		FILE* enc_file = fopen(tpath01, "wb");
+		EncryptFile(dec_file, enc_file, key);
+		
+		fclose(dec_file);
+		fclose(enc_file);
+		// Set new buf and 
+		remove(tpath);
+		
+		int td = open(tpath01, O_RDONLY);
+		
+		off_t new_size;
+		new_size = lseek(td, 0, SEEK_END);
+		lseek(td, 0, SEEK_SET);	
+			
+		char* new_buf = malloc(new_size + 1);
+		read(td, new_buf, new_size);
+		
+		close(td);
+		remove(tpath01);
+					
+		int fd = open(fpath, O_WRONLY);
+		if(fd == -1)
+			return -errno;	
+		// This is where its broken :'(
+		// In order for unencryption to work, we need to maintain entire blocks
+		// By encrypting the file, reading the encrypted file, the rewriting to the actual file, we lose some block data
+		// and thus render decryption impossible.	
+		res = pwrite(fd, new_buf, new_size, offset);
+		if(res == -1)
+			return -errno;
+			
 		close(fd);
+		
 		//~ char tpath[PATH_MAX];
 		//~ tmpFileName(fpath, tpath);
 		
@@ -470,8 +501,8 @@ static int encfs_create(const char* path, mode_t mode, struct fuse_file_info* fi
 	if(temp == -1)
 		return -errno;
 		
-	FILE *realFile = fdopen(real, "w");
-	FILE *tmpFile = fdopen(temp, "w");
+	FILE *realFile = fdopen(real, "wb");
+	FILE *tmpFile = fdopen(temp, "wb");
 	
 	EncryptFile(tmpFile, realFile, key);
 
